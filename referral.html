@@ -68,7 +68,7 @@
             database.ref('users/' + userPhone).once('value').then((snapshot) => {
                 if (snapshot.exists()) {
                     const myCode = snapshot.val().myReferralCode || "N/A";
-                    const myLink = "https://sha1-105ac.web.app/signup.html?ref=" + myCode;
+                    const myLink = "https://sha1-105ac.web.app/index.html?ref=" + myCode;
 
                     document.getElementById("refCodeDisplay").innerText = myCode;
                     document.getElementById("refLinkDisplay").innerText = myLink;
@@ -89,6 +89,7 @@
     </script>
 </body>
 </html>
+
 
 
 
