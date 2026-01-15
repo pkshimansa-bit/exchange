@@ -9,13 +9,12 @@
         body { margin: 0; padding: 0; font-family: sans-serif; background-color: #051937; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         .header { width: 100%; padding: 20px; display: flex; align-items: center; background-color: #051937; box-sizing: border-box; }
         .header i { font-size: 24px; cursor: pointer; margin-right: 15px; color: #00d2ff; }
-        .qr-card { background: white; padding: 15px; border-radius: 20px; margin-top: 30px; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }
+        .qr-card { background: white; padding: 15px; border-radius: 20px; margin-top: 30px; }
         .qr-card img { width: 180px; height: 180px; display: block; }
         .content-box { width: 90%; max-width: 400px; margin-top: 30px; }
         .info-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 20px; text-align: center; margin-bottom: 20px; }
         .code-value { font-size: 28px; font-weight: bold; color: #00d2ff; margin-bottom: 10px; }
-        .link-value { font-size: 13px; color: #ddd; word-break: break-all; margin-bottom: 15px; display: block; }
-        .btn-copy { background: transparent; border: 2px solid #00d2ff; color: #00d2ff; padding: 10px; border-radius: 25px; font-weight: bold; cursor: pointer; width: 100%; }
+        .btn-copy { background: transparent; border: 2px solid #00d2ff; color: #00d2ff; padding: 12px; border-radius: 25px; font-weight: bold; cursor: pointer; width: 100%; }
     </style>
 </head>
 <body>
@@ -26,8 +25,8 @@
     </div>
 
     <div class="qr-card">
-        <img id="qrImg" src="" alt="QR Code" style="display: none;">
-        <p id="qrLoading" style="color: #333;">Generating QR...</p>
+        <img id="qrImg" src="" alt="QR Code" style="display:none;">
+        <p id="qrText" style="color:#333;">Generating QR...</p>
     </div>
 
     <div class="content-box">
@@ -39,7 +38,7 @@
 
         <div class="info-card">
             <div style="color: #aaa; font-size: 11px;">YOUR REFERRAL LINK</div>
-            <span class="link-value" id="refLinkDisplay">Loading Link...</span>
+            <span id="refLinkDisplay" style="font-size: 12px; color: #ddd; display: block; margin-bottom: 15px; word-break: break-all;">Loading...</span>
             <button class="btn-copy" onclick="copyValue('refLinkDisplay')">COPY LINK</button>
         </div>
     </div>
@@ -48,7 +47,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
     <script>
-        // 1. ඔයාගේ Firebase Config එක මෙතනට පේස්ට් කරන්න
+        // ඔයාගේ Firebase Config එක මෙතනට පේස්ට් කරන්න
         const firebaseConfig = {
             authDomain: "sha1-105ac.firebaseapp.com",
   databaseURL: "https://sha1-105ac-default-rtdb.firebaseio.com",
@@ -62,34 +61,23 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // 2. දැනට ලොග් වෙලා ඉන්න නම්බර් එක (localStorage එකෙන් ගන්නා ලෙස පසුව සැකසිය හැක)
-        const userPhone = localStorage.getItem('userPhone') || "0717862995"; 
+        // ඩේටාබේස් එකෙන් දත්ත ගැනීම
+        const userPhone = localStorage.getItem('userPhone') || "0717862995";
 
-        function loadReferral() {
-            // Realtime Database Path: users/0717862995
-            const userRef = database.ref('users/' + userPhone);
-            
-            userRef.once('value').then((snapshot) => {
+        function loadRef() {
+            database.ref('users/' + userPhone).once('value').then((snapshot) => {
                 if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    // ඩේටාබේස් එකේ තියෙන 'myReferralCode' අගය ගැනීම
-                    const myCode = data.myReferralCode || "N/A";
+                    const myCode = snapshot.val().myReferralCode || "N/A";
                     const myLink = "https://sha1-105ac.web.app/signup.html?ref=" + myCode;
 
                     document.getElementById("refCodeDisplay").innerText = myCode;
                     document.getElementById("refLinkDisplay").innerText = myLink;
 
-                    // QR Code එක සාදා පෙන්වීම
-                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(myLink)}`;
-                    document.getElementById("qrImg").src = qrUrl;
+                    // QR API එකෙන් QR එක හැදීම
+                    document.getElementById("qrImg").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(myLink)}`;
                     document.getElementById("qrImg").style.display = "block";
-                    document.getElementById("qrLoading").style.display = "none";
-                } else {
-                    document.getElementById("refLinkDisplay").innerText = "User data not found!";
+                    document.getElementById("qrText").style.display = "none";
                 }
-            }).catch((err) => {
-                console.error("Firebase Error:", err);
-                document.getElementById("refLinkDisplay").innerText = "Database Error!";
             });
         }
 
@@ -97,11 +85,12 @@
             const val = document.getElementById(id).innerText;
             navigator.clipboard.writeText(val).then(() => alert("Copied!"));
         }
-
-        window.onload = loadReferral;
+        window.onload = loadRef;
     </script>
 </body>
 </html>
+
+
 
 
 
