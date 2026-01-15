@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profit Plans - Bet Win</title>
+    <style>
+        :root { --blue: #00d2ff; --dark: #060c21; --glass: rgba(255, 255, 255, 0.05); }
+        body { 
+            background: radial-gradient(circle at top, #1e293b, #060c21); 
+            color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 90px; 
+        }
+
+        .header { padding: 25px; text-align: center; border-bottom: 1px solid rgba(0,210,255,0.2); background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); }
+        .container { padding: 15px; }
+
+        /* Profit Card Design */
+        .plan-card { 
+            background: var(--glass); border: 1.5px solid var(--blue); border-radius: 20px; 
+            padding: 20px; margin-bottom: 25px; box-shadow: 0 0 15px rgba(0, 210, 255, 0.2);
+            position: relative; overflow: hidden;
+        }
+        .level-badge { position: absolute; top: 0; right: 0; background: var(--blue); color: #000; padding: 5px 15px; border-bottom-left-radius: 15px; font-weight: bold; font-size: 12px; }
+
+        .income-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .income-table td { padding: 10px 5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .label { font-size: 12px; opacity: 0.7; }
+        .amount { color: var(--blue); font-weight: bold; text-align: right; }
+
+        /* Referral Section */
+        .ref-box { background: rgba(0,210,255,0.08); padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px dashed var(--blue); }
+        .ref-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; text-align: center; }
+        .ref-item { font-size: 11px; }
+        .ref-val { color: #2ecc71; font-weight: bold; font-size: 14px; display: block; }
+
+        /* Bottom Navigation */
+        .nav-bar { 
+            position: fixed; bottom: 0; width: 100%; background: #00a8ff; 
+            display: flex; justify-content: space-around; padding: 12px 0; 
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        .nav-item { color: white; text-decoration: none; font-size: 13px; text-align: center; font-weight: bold; }
+        .nav-item.active { opacity: 1; border-bottom: 2px solid white; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2 style="margin:0; letter-spacing: 2px; color: var(--blue); font-size: 20px;">PROFIT PLANS</h2>
+    </div>
+
+    <div class="container">
+        
+        <div class="plan-card">
+            <div class="level-badge">VIP 1</div>
+            <h3 style="margin-top:0; color:var(--blue);">Starter Pack</h3>
+            <table class="income-table">
+                <tr><td class="label">දිනක ආදායම (5 Tasks)</td><td class="amount">LKR 260.00</td></tr>
+                <tr><td class="label">මාසික ආදායම</td><td class="amount">LKR 7,800.00</td></tr>
+                <tr><td class="label">වාර්ෂික ආදායම</td><td class="amount">LKR 94,900.00</td></tr>
+            </table>
+            <div class="ref-box">
+                <span style="font-size: 11px; opacity:0.8;">TEAM COMMISSION (Referral)</span>
+                <div class="ref-grid">
+                    <div class="ref-item">Level 1<span class="ref-val">10%</span></div>
+                    <div class="ref-item">Level 2<span class="ref-val">5%</span></div>
+                    <div class="ref-item">Level 3<span class="ref-val">2%</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="plan-card">
+            <div class="level-badge" style="background: #f1c40f;">VIP 2</div>
+            <h3 style="margin-top:0; color:#f1c40f;">Business Pro</h3>
+            <table class="income-table">
+                <tr><td class="label">දිනක ආදායම (10 Tasks)</td><td class="amount">LKR 860.00</td></tr>
+                <tr><td class="label">මාසික ආදායම</td><td class="amount">LKR 25,800.00</td></tr>
+                <tr><td class="label">වාර්ෂික ආදායම</td><td class="amount">LKR 313,900.00</td></tr>
+            </table>
+            <div class="ref-box">
+                <span style="font-size: 11px; opacity:0.8;">TEAM COMMISSION (Referral)</span>
+                <div class="ref-grid">
+                    <div class="ref-item">Level 1<span class="ref-val">10%</span></div>
+                    <div class="ref-item">Level 2<span class="ref-val">5%</span></div>
+                    <div class="ref-item">Level 3<span class="ref-val">2%</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="plan-card">
+            <div class="level-badge" style="background: #e74c3c;">VIP 3</div>
+            <h3 style="margin-top:0; color:#e74c3c;">Ultimate Investor</h3>
+            <table class="income-table">
+                <tr><td class="label">දිනක ආදායම (20 Tasks)</td><td class="amount">LKR 3,000.00</td></tr>
+                <tr><td class="label">මාසික ආදායම</td><td class="amount">LKR 90,000.00</td></tr>
+                <tr><td class="label">වාර්ෂික ආදායම</td><td class="amount">LKR 1,095,000.00</td></tr>
+            </table>
+            <div class="ref-box">
+                <span style="font-size: 11px; opacity:0.8;">TEAM COMMISSION (Referral)</span>
+                <div class="ref-grid">
+                    <div class="ref-item">Level 1<span class="ref-val">10%</span></div>
+                    <div class="ref-item">Level 2<span class="ref-val">5%</span></div>
+                    <div class="ref-item">Level 3<span class="ref-val">2%</span></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="nav-bar">
+        <a href="home.html" class="nav-item">home</a>
+        <a href="vip.html" class="nav-item">vip</a>
+        <a href="profit.html" class="nav-item active">profit</a>
+        <a href="wallet.html" class="nav-item">wallet</a>
+    </div>
+
+</body>
+</html>
+

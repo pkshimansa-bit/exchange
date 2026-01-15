@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bet Win | My Wallet</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --neon: #00f2ff; --bg: #000428; --glass: rgba(255, 255, 255, 0.05); }
+        body { 
+            margin: 0; font-family: 'Segoe UI', sans-serif; 
+            background: radial-gradient(circle at center, #004e92 0%, var(--bg) 100%);
+            background-attachment: fixed; color: white; padding-bottom: 100px;
+        }
+
+        /* Profile Area */
+        .profile-header { text-align: center; padding: 30px 20px; }
+        .user-icon { font-size: 60px; color: var(--neon); text-shadow: 0 0 15px var(--neon); margin-bottom: 10px; }
+        .user-id { font-size: 20px; font-weight: bold; }
+        .vip-badge { display: inline-block; background: var(--neon); color: #000; padding: 5px 15px; border-radius: 20px; font-size: 11px; font-weight: 900; margin-top: 10px; }
+
+        /* Main Balance */
+        .balance-card { 
+            margin: 0 20px 20px; padding: 30px; background: var(--glass);
+            border-radius: 25px; border: 1px solid rgba(0, 242, 255, 0.3); text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        .bal-val { font-size: 34px; font-weight: 800; color: var(--neon); margin-top: 5px; }
+
+        /* Multi-Income Grid */
+        .income-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 20px; margin-bottom: 25px; }
+        .inc-box { background: var(--glass); padding: 15px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.05); text-align: center; }
+        .inc-lbl { font-size: 9px; opacity: 0.6; text-transform: uppercase; margin-bottom: 5px; }
+        .inc-val { font-size: 15px; font-weight: bold; color: var(--neon); }
+        .highlight { grid-column: span 2; background: rgba(0, 242, 255, 0.1); border: 1px solid var(--neon); }
+
+        /* Buttons */
+        .btn-container { padding: 0 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .wallet-btn { 
+            background: var(--glass); border: 1px solid rgba(255,255,255,0.1); padding: 20px; 
+            border-radius: 20px; text-decoration: none; color: white; text-align: center;
+            display: flex; flex-direction: column; align-items: center; transition: 0.3s;
+        }
+        .wallet-btn:active { transform: scale(0.95); }
+        .wallet-btn i { font-size: 24px; color: var(--neon); margin-bottom: 8px; }
+        .wallet-btn span { font-size: 13px; font-weight: 600; }
+
+        /* Bottom Menu */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: rgba(0,0,0,0.9); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); }
+        .nav-item { text-align: center; color: white; text-decoration: none; font-size: 11px; opacity: 0.5; }
+        .nav-item.active { opacity: 1; color: var(--neon); }
+        .nav-item i { display: block; font-size: 20px; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="profile-header">
+        <div class="user-icon"><i class="fas fa-user-circle"></i></div>
+        <div class="user-id" id="phoneTxt">07********</div>
+        <div class="vip-badge" id="vipTxt">LEVEL 0</div>
+    </div>
+
+    <div class="balance-card">
+        <div style="font-size: 11px; opacity: 0.8; letter-spacing: 1px;">AVAILABLE BALANCE</div>
+        <div class="bal-val">LKR <span id="balanceTxt">0.00</span></div>
+    </div>
+
+    <div class="income-grid">
+        <div class="inc-box"><div class="inc-lbl">Today Income</div><div class="inc-val" id="todayInc">0.00</div></div>
+        <div class="inc-box"><div class="inc-lbl">Weekly Income</div><div class="inc-val" id="weekInc">0.00</div></div>
+        <div class="inc-box"><div class="inc-lbl">Monthly Income</div><div class="inc-val" id="monthInc">0.00</div></div>
+        <div class="inc-box"><div class="inc-lbl">Sub Task Inc</div><div class="inc-val" id="subInc">0.00</div></div>
+        <div class="inc-box"><div class="inc-lbl">Intern Income</div><div class="inc-val" id="internInc">0.00</div></div>
+        <div class="inc-box"><div class="inc-lbl">Tasks Done</div><div class="inc-val" id="tasksTxt">0</div></div>
+        
+        <div class="inc-box highlight">
+            <div class="inc-lbl" style="opacity: 1; color: white;">Total Accumulated Income</div>
+            <div class="inc-val" style="font-size: 20px;" id="totalInc">0.00</div>
+        </div>
+    </div>
+
+    <div class="btn-container" id="adminButtons"></div>
+
+    <nav class="bottom-nav">
+        <a href="home.html" class="nav-item"><i class="fas fa-home"></i>Home</a>
+        <a href="vip.html" class="nav-item"><i class="fas fa-crown"></i>VIP</a>
+        <a href="profit.html" class="nav-item"><i class="fas fa-chart-line"></i>Profit</a>
+        <a href="wallet.html" class="nav-item active"><i class="fas fa-wallet"></i>Wallet</a>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {  authDomain: "sha1-105ac.firebaseapp.com",
+  databaseURL: "https://sha1-105ac-default-rtdb.firebaseio.com",
+  projectId: "sha1-105ac",
+  storageBucket: "sha1-105ac.firebasestorage.app",
+  messagingSenderId: "1056846099713",
+  appId: "1:1056846099713:web:c27970161f7a2493db1700",
+  measurementId: "G-T1EK6X2N48" };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const userPhone = localStorage.getItem("userPhone");
+
+        if (userPhone) {
+            // පරිශීලක දත්ත සජීවීව කියවීම
+            onValue(ref(db, `users/${userPhone}`), (snap) => {
+                if(snap.exists()) {
+                    const d = snap.val();
+                    document.getElementById('phoneTxt').innerText = userPhone;
+                    document.getElementById('vipTxt').innerText = (d.currentVIP || "level_0").toUpperCase();
+                    
+                    // මුදල් පෙන්වීම (Balance සහ Total Income)
+                    document.getElementById('balanceTxt').innerText = Number(d.balance || 0).toLocaleString();
+                    document.getElementById('totalInc').innerText = (d.totalInc || 0).toFixed(2);
+                    
+                    // අනෙකුත් විස්තර
+                    document.getElementById('todayInc').innerText = (d.todayProfit || 0).toFixed(2);
+                    document.getElementById('weekInc').innerText = (d.weekInc || 0).toFixed(2);
+                    document.getElementById('monthInc').innerText = (d.monthInc || 0).toFixed(2);
+                    document.getElementById('subInc').innerText = (d.subTaskInc || 0).toFixed(2);
+                    document.getElementById('internInc').innerText = (d.internInc || 0).toFixed(2);
+                    document.getElementById('tasksTxt').innerText = d.tasksDone || 0;
+                }
+            });
+
+            // බටන් දත්ත කියවීම
+            onValue(ref(db, 'adminSettings/walletButtons'), (snapshot) => {
+                const container = document.getElementById('adminButtons');
+                container.innerHTML = ""; 
+                if (snapshot.exists()) {
+                    Object.values(snapshot.val()).forEach((btn) => {
+                        const btnLink = btn.Link || btn.link || "#";
+                        const btnName = btn.name || "Button";
+                        container.innerHTML += `<a href="${btnLink}" class="wallet-btn"><i class="fas fa-th-large"></i><span>${btnName}</span></a>`;
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

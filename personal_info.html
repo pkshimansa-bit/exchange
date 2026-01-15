@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Security - Bet Win</title>
+    <style>
+        :root { --bg: #060c21; --card: #111d35; --blue: #00d2ff; --text: #ffffff; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+
+        .header { display: flex; align-items: center; margin-bottom: 25px; }
+        .back-btn { color: var(--blue); text-decoration: none; font-size: 18px; font-weight: bold; margin-right: 20px; }
+        
+        .section-card { background: var(--card); border: 1px solid #1e2a4a; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+        h3 { color: var(--blue); margin-top: 0; font-size: 16px; border-bottom: 1px solid #1e2a4a; padding-bottom: 10px; }
+        
+        label { display: block; margin: 15px 0 5px; font-size: 13px; color: #94a3b8; }
+        input { 
+            width: 100%; box-sizing: border-box; background: #0b152b; 
+            border: 1px solid #23395d; border-radius: 8px; 
+            padding: 12px; color: white; font-size: 14px;
+        }
+        input:focus { border-color: var(--blue); outline: none; }
+
+        .save-btn { 
+            width: 100%; background: var(--blue); color: #060c21; border: none; 
+            padding: 12px; border-radius: 8px; font-size: 15px; font-weight: bold; 
+            cursor: pointer; margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="wallet.html" class="back-btn">← Back</a>
+        <div style="font-size: 18px; font-weight: bold;">ACCOUNT SECURITY</div>
+    </div>
+
+    <div class="section-card">
+        <h3>🏦 Bank Account Details</h3>
+        <label>බැංකුවේ නම</label>
+        <input type="text" id="bankName" placeholder="Eg: Sampath Bank">
+        
+        <label>ගිණුම් අංකය</label>
+        <input type="text" id="accNumber" placeholder="Enter account number">
+        
+        <label>ගිණුම් හිමියාගේ නම</label>
+        <input type="text" id="accName" placeholder="Enter full name">
+        
+        <button class="save-btn" onclick="saveBankInfo()">Update Bank Info</button>
+    </div>
+
+    <div class="section-card">
+        <h3>🔐 Set Fund Password</h3>
+        <p style="font-size: 12px; color: #94a3b8;">මුදල් ලබාගැනීමේදී (Withdrawal) මෙම රහස් අංකය අවශ්‍ය වේ.</p>
+        
+        <label>අලුත් ෆවුන්ඩ් පාස්වර්ඩ් එක (Digit 6)</label>
+        <input type="password" id="fundPass" placeholder="Enter 6 digit password" maxlength="6">
+        
+        <button class="save-btn" onclick="setFundPassword()" style="background: #f1c40f;">Set Fund Password</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = { 
+             authDomain: "sha1-105ac.firebaseapp.com",
+  databaseURL: "https://sha1-105ac-default-rtdb.firebaseio.com",
+  projectId: "sha1-105ac",
+  storageBucket: "sha1-105ac.firebasestorage.app",
+  messagingSenderId: "1056846099713",
+  appId: "1:1056846099713:web:c27970161f7a2493db1700",
+  measurementId: "G-T1EK6X2N48"
+         };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const phone = localStorage.getItem("userPhone");
+
+        // කලින් තිබූ බැංකු විස්තර පෙන්වීම
+        if(phone) {
+            get(ref(db, `users/${phone}`)).then(snapshot => {
+                const data = snapshot.val();
+                if(data && data.bankInfo) {
+                    document.getElementById('bankName').value = data.bankInfo.bankName || "";
+                    document.getElementById('accNumber').value = data.bankInfo.accNumber || "";
+                    document.getElementById('accName').value = data.bankInfo.accName || "";
+                }
+            });
+        }
+
+        // බැංකු විස්තර සේව් කිරීම
+        window.saveBankInfo = function() {
+            const bName = document.getElementById('bankName').value;
+            const bNum = document.getElementById('accNumber').value;
+            const bAcc = document.getElementById('accName').value;
+
+            if(!bName || !bNum || !bAcc) { alert("සියලුම විස්තර ඇතුළත් කරන්න!"); return; }
+
+            update(ref(db, `users/${phone}/bankInfo`), {
+                bankName: bName,
+                accNumber: bNum,
+                accName: bAcc
+            }).then(() => alert("බැංකු විස්තර සාර්ථකව යාවත්කාලීන විය!"));
+        };
+
+        // ෆවුන්ඩ් පාස්වර්ඩ් එක සැකසීම
+        window.setFundPassword = function() {
+            const pass = document.getElementById('fundPass').value;
+            if(pass.length < 6) { alert("කරුණාකර ඉලක්කම් 6ක පාස්වර්ඩ් එකක් ඇතුළත් කරන්න."); return; }
+
+            update(ref(db, `users/${phone}`), {
+                fundPassword: pass
+            }).then(() => alert("ෆවුන්ඩ් පාස්වර්ඩ් එක සාර්ථකව සකසන ලදී!"));
+        };
+    </script>
+</body>
+</html>
+

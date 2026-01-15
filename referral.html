@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invite Friends | Bet Win</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root { --neon: #00f2ff; --bg: #000428; --glass: rgba(255, 255, 255, 0.05); }
+        
+        body { 
+            margin: 0; font-family: 'Segoe UI', sans-serif; 
+            background: radial-gradient(circle at center, #004e92 0%, var(--bg) 100%);
+            background-attachment: fixed; color: white; display: flex; flex-direction: column; min-height: 100vh;
+        }
+
+        .header { display: flex; align-items: center; padding: 20px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(0,242,255,0.2); }
+        .back-btn { font-size: 24px; color: var(--neon); margin-right: 15px; cursor: pointer; }
+        .title { font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+
+        .container { flex: 1; padding: 30px 20px; display: flex; flex-direction: column; align-items: center; }
+
+        /* QR Code Styling */
+        .qr-card { 
+            background: white; padding: 15px; border-radius: 20px; 
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.4); margin-bottom: 30px;
+        }
+        #qrcode img { width: 180px; height: 180px; }
+
+        /* Referral Info Cards */
+        .info-box { 
+            width: 100%; max-width: 400px; background: var(--glass); 
+            border: 1px solid rgba(0,242,255,0.2); border-radius: 20px; 
+            padding: 20px; margin-bottom: 20px; backdrop-filter: blur(10px);
+            text-align: center;
+        }
+        .label { font-size: 11px; opacity: 0.6; text-transform: uppercase; margin-bottom: 10px; display: block; }
+        .value { font-size: 22px; font-weight: 800; color: var(--neon); letter-spacing: 2px; }
+        
+        .copy-btn { 
+            background: rgba(0, 242, 255, 0.1); border: 1px solid var(--neon);
+            color: var(--neon); padding: 8px 20px; border-radius: 30px; 
+            margin-top: 15px; cursor: pointer; font-weight: bold; font-size: 13px;
+            transition: 0.3s;
+        }
+        .copy-btn:active { background: var(--neon); color: #000; }
+
+        .instruction { font-size: 13px; opacity: 0.7; text-align: center; max-width: 300px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <i class="fas fa-chevron-left back-btn" onclick="history.back()"></i>
+        <div class="title">INVITE FRIENDS</div>
+    </div>
+
+    <div class="container">
+        <div class="qr-card">
+            <div id="qrcode"></div>
+        </div>
+
+        <div class="info-box">
+            <span class="label">Your Referral Code</span>
+            <div class="value" id="refCode">------</div>
+            <button class="copy-btn" onclick="copyText('refCode')">COPY CODE</button>
+        </div>
+
+        <div class="info-box">
+            <span class="label">Your Referral Link</span>
+            <div id="refLink" style="font-size: 12px; word-break: break-all; opacity: 0.8; margin-bottom: 10px;">Loading...</div>
+            <button class="copy-btn" onclick="copyText('refLink')">COPY LINK</button>
+        </div>
+
+        <p class="instruction">
+            ඔබේ මිතුරන්ට මෙම ලින්ක් එක හෝ කේතය යවා ඔවුන් VIP මට්ටමකට පැමිණි විට ඉහළ කොමිස් මුදලක් ලබාගන්න.
+        </p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = { 
+             authDomain: "sha1-105ac.firebaseapp.com",
+  databaseURL: "https://sha1-105ac-default-rtdb.firebaseio.com",
+  projectId: "sha1-105ac",
+  storageBucket: "sha1-105ac.firebasestorage.app",
+  messagingSenderId: "1056846099713",
+  appId: "1:1056846099713:web:c27970161f7a2493db1700",
+  measurementId: "G-T1EK6X2N48"
+         };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const phone = localStorage.getItem("userPhone");
+
+        async function generateInvite() {
+            if(!phone) return;
+
+            // Firebase එකෙන් සාමාජිකයාගේ Referral Code එක ලබා ගැනීම
+            const snap = await get(ref(db, `users/${phone}`));
+            if(snap.exists()) {
+                const myCode = snap.val().myReferralCode || "N/A";
+                document.getElementById('refCode').innerText = myCode;
+
+                // රෙෆරල් ලින්ක් එක සෑදීම (ඔබේ වෙබ් අඩවියේ ඩොමේන් එක මෙතනට දාන්න)
+                const myLink = `https://betwin.com/register.html?ref=${myCode}`; 
+                document.getElementById('refLink').innerText = myLink;
+
+                // QR Code එක ජනනය කිරීම
+                new QRCode(document.getElementById("qrcode"), {
+                    text: myLink,
+                    width: 180,
+                    height: 180,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+            }
+        }
+
+        window.copyText = (id) => {
+            const text = document.getElementById(id).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Copied to clipboard!");
+            });
+        };
+
+        generateInvite();
+    </script>
+</body>
+</html>
+

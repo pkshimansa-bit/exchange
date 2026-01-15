@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bet Win - Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --neon: #00f2ff; --bg: #000428; --glass: rgba(255, 255, 255, 0.05); }
+        
+        body { 
+            margin: 0; font-family: 'Segoe UI', sans-serif; 
+            background: radial-gradient(circle at center, #004e92 0%, var(--bg) 100%);
+            background-attachment: fixed; color: white; padding-bottom: 90px;
+        }
+
+        /* Header */
+        .header { text-align: center; padding: 40px 20px 20px; }
+        .header h1 { font-size: 32px; font-weight: 900; letter-spacing: 3px; margin: 0; color: var(--neon); text-shadow: 0 0 15px var(--neon); }
+        .header p { font-size: 14px; opacity: 0.8; margin-top: 5px; text-transform: uppercase; }
+
+        /* Notice Bar */
+        .notice-bar { 
+            background: rgba(0, 0, 0, 0.4); padding: 12px; font-size: 13px; 
+            border-top: 1px solid rgba(0,242,255,0.2); border-bottom: 1px solid rgba(0,242,255,0.2);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .notice-bar i { color: #ffd700; margin-right: 12px; }
+
+        /* Rates Grid */
+        .rates-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
+        .rate-card { 
+            background: var(--glass); border: 1px solid rgba(0,242,255,0.2); 
+            border-radius: 15px; padding: 20px; text-align: center;
+        }
+        .rate-lbl { font-size: 10px; opacity: 0.7; margin-bottom: 8px; text-transform: uppercase; }
+        .rate-val { font-size: 16px; font-weight: bold; color: var(--neon); }
+
+        /* Action Buttons (Invite & News) */
+        .top-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px 20px; }
+        .action-item { 
+            background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(0, 242, 255, 0.2);
+            border-radius: 15px; padding: 15px; text-align: center; text-decoration: none; color: white;
+            display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 600;
+        }
+        .action-item i { color: var(--neon); font-size: 18px; }
+
+        /* Exchange Banner */
+        .banner-box { padding: 0 20px; }
+        .main-banner { 
+            background: var(--neon); color: #000; padding: 18px; text-align: center; 
+            font-weight: 900; font-size: 20px; border-radius: 12px; cursor: pointer;
+            box-shadow: 0 5px 25px rgba(0, 242, 255, 0.4);
+        }
+        .trust-txt { text-align: center; font-size: 11px; opacity: 0.6; margin: 12px 0 30px; }
+
+        /* Menu Grid */
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px; }
+        .menu-item { 
+            background: var(--glass); border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 18px; padding: 25px; text-align: center; text-decoration: none; color: white;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .menu-item i { font-size: 30px; color: #ffd700; margin-bottom: 12px; }
+        .menu-item span { font-size: 14px; font-weight: 600; }
+
+        /* Nav Bar */
+        .nav-bar { 
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; 
+            background: rgba(0, 0, 0, 0.9); display: flex; justify-content: space-around; 
+            align-items: center; border-top: 1px solid rgba(0, 242, 255, 0.2);
+        }
+        .nav-item { text-align: center; color: white; text-decoration: none; font-size: 16px; opacity: 0.6; }
+        .nav-item i { display: block; font-size: 22px; margin-bottom: 4px; }
+        .nav-item.active { opacity: 1; color: var(--neon); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>BET WIN</h1>
+        <p>Secure Currency Exchange</p>
+    </div>
+
+    <div class="notice-bar">
+        <i class="fas fa-satellite-dish"></i>
+        <span id="liveNotice">Loading updates...</span>
+    </div>
+
+    <div class="rates-grid">
+        <div class="rate-card">
+            <div class="rate-lbl">USDT / LKR</div>
+            <div class="rate-val">LKR <span id="rateUsdt">0.00</span></div>
+        </div>
+        <div class="rate-card">
+            <div class="rate-lbl">BTC / LKR</div>
+            <div class="rate-val">LKR <span id="rateBtc">0</span></div>
+        </div>
+    </div>
+
+    <div class="top-actions">
+        <a href="referral.html" class="action-item">
+            <i class="fas fa-user-plus"></i> <span>Invite</span>
+        </a>
+        <a href="news.html" class="action-item">
+            <i class="fas fa-newspaper"></i> <span>News</span>
+        </a>
+    </div>
+
+    <div class="banner-box">
+        <div class="main-banner" id="bannerLabel" onclick="location.href='exchange.html'">
+            EXCHANGE NOW
+        </div>
+        <p class="trust-txt" id="trustedLabel">Trusted by 50,000+ members worldwide</p>
+    </div>
+
+    <div class="menu-grid">
+        <a href="recharge.html" class="menu-item"><i class="fas fa-wallet"></i><span>Recharge</span></a>
+        <a href="withdrawal.html" class="menu-item"><i class="fas fa-hand-holding-usd"></i><span>Withdrawal</span></a>
+        <a href="meeting.html" class="menu-item"><i class="fas fa-video"></i><span>Meeting</span></a>
+        <a href="team.html" class="menu-item"><i class="fas fa-wallet"></i><span>Team</span></a>
+    </div>
+
+    <nav class="nav-bar">
+        <a href="home.html" class="nav-item active"><i class="fas fa-home"></i>home</a>
+        <a href="vip.html" class="nav-item"><i class="fas fa-crown"></i>VIP</a>
+        <a href="exchange.html" class="nav-item"><i class="fas fa-chart-line"></i>profit</a>
+        <a href="wallet.html" class="nav-item"><i class="fas fa-user-circle"></i>wallet</a>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = { 
+             authDomain: "sha1-105ac.firebaseapp.com",
+  databaseURL: "https://sha1-105ac-default-rtdb.firebaseio.com",
+  projectId: "sha1-105ac",
+  storageBucket: "sha1-105ac.firebasestorage.app",
+  messagingSenderId: "1056846099713",
+  appId: "1:1056846099713:web:c27970161f7a2493db1700",
+  measurementId: "G-T1EK6X2N48"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // ඇඩ්මින් පැනල් එකේ "Home Page Manager" එකෙන් දත්ත කියවීම
+        onValue(ref(db, 'adminSettings/homePage'), (snap) => {
+            if(snap.exists()){
+                const d = snap.val();
+                document.getElementById('liveNotice').innerText = d.notice || "Welcome!";
+                document.getElementById('rateUsdt').innerText = d.usdt || "0.00";
+                document.getElementById('rateBtc').innerText = Number(d.btc || 0).toLocaleString();
+                document.getElementById('bannerLabel').innerText = d.bannerText || "EXCHANGE NOW";
+                document.getElementById('trustedLabel').innerText = d.trustedLabel || "Secure Exchange Platform";
+            }
+        });
+    </script>
+</body>
+</html>
+

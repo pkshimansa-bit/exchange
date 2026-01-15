@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Info - Bet Win</title>
+    <style>
+        /* ඔබ ඉල්ලූ පරිදි තද නිල් පසුබිම */
+        body { 
+            background-color: #060c21; 
+            color: white; 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+        }
+
+        /* Back Button & Header */
+        .header { 
+            display: flex; 
+            align-items: center; 
+            margin-bottom: 25px; 
+        }
+        .back-btn { 
+            color: #00d2ff; 
+            text-decoration: none; 
+            font-size: 18px; 
+            font-weight: bold; 
+            margin-right: 15px; 
+        }
+        .title { 
+            font-size: 20px; 
+            font-weight: bold; 
+            color: #00d2ff; 
+            letter-spacing: 1px;
+        }
+
+        /* Company Details Card */
+        .company-card {
+            background-color: #111d35; /* කාඩ් එකේ පසුබිම තරමක් ලා නිල් */
+            border: 1px solid #23395d;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            line-height: 1.6;
+            min-height: 300px;
+        }
+
+        .company-logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .company-logo img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            filter: drop-shadow(0 0 10px #00d2ff);
+        }
+
+        #companyContent {
+            white-space: pre-wrap; 
+            font-size: 16px;
+            color: #e0e0e0;
+        }
+
+        .loading-text {
+            color: #94a3b8;
+            text-align: center;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="home.html" class="back-btn">← Back</a>
+        <div class="title">COMPANY INFO</div>
+    </div>
+
+    <div class="company-card">
+        <div class="company-logo">
+            <img src="https://cdn-icons-png.flaticon.com/512/3061/3061341.png" alt="Company Logo">
+        </div>
+        
+        <div id="companyContent" class="loading-text">
+            තොරතුරු පූරණය වෙමින් පවතී...
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // Firebase Configuration
+        const firebaseConfig = { 
+             authDomain: "sha1-105ac.firebaseapp.com",
+  databaseURL: "https://sha1-105ac-default-rtdb.firebaseio.com",
+  projectId: "sha1-105ac",
+  storageBucket: "sha1-105ac.firebasestorage.app",
+  messagingSenderId: "1056846099713",
+  appId: "1:1056846099713:web:c27970161f7a2493db1700",
+  measurementId: "G-T1EK6X2N48"
+         };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // ඇඩ්මින් පැනල් එකෙන් එවන කොම්පැනි විස්තර කියවීම
+        const companyRef = ref(db, 'adminSettings/companyDetails');
+        onValue(companyRef, (snapshot) => {
+            const content = snapshot.val();
+            const contentDiv = document.getElementById('companyContent');
+            
+            if (content) {
+                contentDiv.innerText = content;
+                contentDiv.classList.remove('loading-text');
+            } else {
+                contentDiv.innerText = "කොම්පැනි තොරතුරු තවමත් ඇතුළත් කර නොමැත.";
+            }
+        });
+    </script>
+</body>
+</html>
+

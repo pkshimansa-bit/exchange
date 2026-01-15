@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Withdrawal Center</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --neon: #00f2ff; --bg: #000428; }
+        body { 
+            margin: 0; font-family: 'Segoe UI', sans-serif; 
+            background: radial-gradient(circle at center, #004e92 0%, var(--bg) 100%);
+            background-attachment: fixed; color: white; display: flex; flex-direction: column; min-height: 100vh;
+        }
+
+        .header { display: flex; align-items: center; padding: 20px; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--neon); }
+        .back-btn { font-size: 24px; color: var(--neon); margin-right: 15px; cursor: pointer; }
+        .title { font-size: 18px; font-weight: bold; text-transform: uppercase; }
+
+        .container { padding: 20px; flex: 1; }
+
+        /* Bank Account Display */
+        .info-card { 
+            background: rgba(255, 255, 255, 0.05); border: 1px solid var(--neon);
+            border-radius: 15px; padding: 20px; margin-bottom: 25px;
+        }
+        .info-card h4 { margin: 0 0 10px 0; color: var(--neon); font-size: 14px; text-transform: uppercase; }
+        .bank-detail { font-size: 15px; margin-bottom: 8px; opacity: 0.9; }
+
+        /* Amount Buttons Grid */
+        .section-label { font-size: 13px; margin-bottom: 10px; opacity: 0.8; display: block; }
+        .amount-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 25px; }
+        .amt-btn { 
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(0, 242, 255, 0.3);
+            color: white; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .amt-btn.selected { background: var(--neon); color: black; border-color: white; box-shadow: 0 0 10px var(--neon); }
+
+        /* Password & Summary */
+        .input-box { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid rgba(0, 242, 255, 0.3); background: rgba(0,0,0,0.2); color: white; box-sizing: border-box; font-size: 16px; margin-bottom: 20px; }
+        .summary { background: rgba(0, 242, 255, 0.05); padding: 15px; border-radius: 10px; font-size: 14px; margin-bottom: 25px; }
+        .summary div { display: flex; justify-content: space-between; margin-bottom: 5px; }
+
+        .confirm-btn { 
+            width: 100%; background: var(--neon); color: #000; border: none; padding: 18px; 
+            border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <i class="fas fa-chevron-left back-btn" onclick="history.back()"></i>
+        <div class="title" id="ui_title">WITHDRAWAL</div>
+    </div>
+
+    <div class="container">
+        <div class="info-card">
+            <h4 id="ui_cardHead">Receiving Bank Account</h4>
+            <div class="bank-detail">Name: <span id="bank_name">-</span></div>
+            <div class="bank-detail">A/C Number: <span id="bank_acc">-</span></div>
+            <div class="bank-detail">Bank: <span id="bank_branch">-</span></div>
+        </div>
+
+        <span class="section-label">Select Withdrawal Amount</span>
+        <div class="amount-grid" id="amountButtons"></div>
+
+        <div class="summary">
+            <div><span>Handling Fee (<span id="fee_perc">0</span>%)</span> <span id="fee_amt">LKR 0.00</span></div>
+            <div style="font-weight: bold; color: var(--neon); margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                <span>Total Expected:</span> <span id="total_rec">LKR 0.00</span>
+            </div>
+        </div>
+
+        <span class="section-label">Enter Fund Password</span>
+        <input type="password" id="fundPassword" class="input-box" placeholder="******">
+
+        <button class="confirm-btn" id="ui_btn" onclick="submitWithdrawal()">CONFIRM WITHDRAWAL</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, get, onValue, push, set, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = { 
+             authDomain: "sha1-105ac.firebaseapp.com",
+  databaseURL: "https://sha1-105ac-default-rtdb.firebaseio.com",
+  projectId: "sha1-105ac",
+  storageBucket: "sha1-105ac.firebasestorage.app",
+  messagingSenderId: "1056846099713",
+  appId: "1:1056846099713:web:c27970161f7a2493db1700",
+  measurementId: "G-T1EK6X2N48"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const phone = localStorage.getItem("userPhone");
+
+        let selectedAmt = 0;
+        let withdrawFee = 0;
+        let userData = {};
+
+        async function init() {
+            if(!phone) return;
+
+            // 1. Withdrawal Config ලෝඩ් කිරීම (Amounts බටන් සහ UI වචන)
+            onValue(ref(db, 'adminSettings/withdrawalConfig'), (snap) => {
+                if(snap.exists()){
+                    const cfg = snap.val();
+                    document.getElementById('ui_title').innerText = cfg.uiTitle;
+                    document.getElementById('ui_cardHead').innerText = cfg.uiCardHead;
+                    document.getElementById('ui_btn').innerText = cfg.uiBtn;
+                    document.getElementById('fee_perc').innerText = cfg.fee;
+                    withdrawFee = parseFloat(cfg.fee);
+
+                    const grid = document.getElementById('amountButtons');
+                    grid.innerHTML = "";
+                    const amts = cfg.amounts.split(',');
+                    amts.forEach(amt => {
+                        grid.innerHTML += `<button class="amt-btn" onclick="selectAmount(this, ${amt})">LKR ${amt}</button>`;
+                    });
+                }
+            });
+
+            // 2. මෙම්බර් දත්ත සහ බෑන්ක් තොරතුරු ලබාගැනීම
+            onValue(ref(db, `users/${phone}`), (snap) => {
+                if(snap.exists()){
+                    userData = snap.val();
+                    if(userData.bankInfo){
+                        document.getElementById('bank_name').innerText = userData.bankInfo.accName;
+                        document.getElementById('bank_acc').innerText = userData.bankInfo.accNumber;
+                        document.getElementById('bank_branch').innerText = userData.bankInfo.bankName;
+                    }
+                }
+            });
+        }
+
+        window.selectAmount = (btn, amt) => {
+            document.querySelectorAll('.amt-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedAmt = amt;
+            
+            const feeAmt = (amt * withdrawFee) / 100;
+            document.getElementById('fee_amt').innerText = `LKR ${feeAmt.toFixed(2)}`;
+            document.getElementById('total_rec').innerText = `LKR ${(amt - feeAmt).toFixed(2)}`;
+        };
+
+        window.submitWithdrawal = async () => {
+            // A. වේලාව පරීක්ෂාව (9:30 AM - 5:30 PM)
+            const now = new Date();
+            const hour = now.getHours();
+            const min = now.getMinutes();
+            const timeVal = hour * 100 + min;
+
+            if (timeVal < 930 || timeVal > 1730) {
+                return alert("සමාවෙන්න, මුදල් ලබාගත හැක්කේ උදේ 9:30 සිට සවස 5:30 දක්වා පමණි.");
+            }
+
+            // B. Level 0 පරීක්ෂාව
+            if (userData.currentVIP === "level_0") {
+                return alert("Level 0 සාමාජිකයින්ට මුදල් ලබාගත නොහැක. කරුණාකර VIP මට්ටමකට යන්න.");
+            }
+
+            // C. දිනකට වාර ගණන පරීක්ෂාව (LimitMode: daily)
+            const today = new Date().toLocaleDateString();
+            if(userData.lastWithdrawDate === today) {
+                return alert("අද දිනට නියමිත වාර ගණන අවසන්. හෙට නැවත උත්සාහ කරන්න.");
+            }
+
+            const inputPass = document.getElementById('fundPassword').value;
+
+            // D. මුදල සහ පාස්වර්ඩ් පරීක්ෂාව
+            if(!selectedAmt) return alert("කරුණාකර ලබාගන්නා මුදල තෝරන්න.");
+            if(selectedAmt > userData.balance) return alert("ඔබේ ගිණුමේ ප්‍රමාණවත් මුදලක් නැත.");
+            if(inputPass !== userData.fundPassword) return alert("Fund Password එක වැරදියි!");
+
+            // E. සාර්ථක නම් රිකුවෙස්ට් එක Firebase යැවීම
+            if(confirm(`LKR ${selectedAmt} ලබාගැනීමට අවශ්‍යද?`)) {
+                const withdrawRef = push(ref(db, 'withdrawRequests'));
+                await set(withdrawRef, {
+                    phone: phone,
+                    amount: selectedAmt,
+                    fee: (selectedAmt * withdrawFee) / 100,
+                    status: 'pending',
+                    timestamp: new Date().getTime(),
+                    bank: userData.bankInfo
+                });
+
+                // බැලන්ස් එක සහ දිනය යාවත්කාලීන කිරීම
+                await update(ref(db, `users/${phone}`), { 
+                    balance: userData.balance - selectedAmt,
+                    lastWithdrawDate: today 
+                });
+
+                alert("Withdrawal Request submitted! ඇඩ්මින් විසින් අනුමත කරන තෙක් රැඳී සිටින්න.");
+                location.reload();
+            }
+        };
+
+        init();
+    </script>
+</body>
+</html>
+

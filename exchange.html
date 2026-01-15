@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Exchange | Data Fix</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --neon: #34cc5c; --bg: #0b111a; --card: #1c2531; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; text-align: center; padding-bottom: 100px; }
+        .header { padding: 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(52, 204, 92, 0.2); }
+        .back-btn { color: var(--neon); text-decoration: none; font-size: 14px; }
+        .tab-container { display: flex; justify-content: center; margin: 15px 0; gap: 10px; }
+        .tab-btn { background: #242d3a; border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px 25px; border-radius: 25px; cursor: pointer; }
+        .tab-btn.active { background: var(--neon); color: black; font-weight: bold; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Card Section */
+        .card-container { margin: 10px auto; width: 92%; max-width: 380px; background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+        .card-top { background: #242d3a; padding: 40px 20px; position: relative; }
+        .task-progress-tag { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5); color: var(--neon); padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; border: 1px solid var(--neon); }
+        .lvl-badge { position: absolute; top: 15px; left: 15px; background: var(--neon); color: white; padding: 4px 12px; border-radius: 8px; font-size: 10px; }
+        .mining-icon { font-size: 55px; color: var(--neon); margin-bottom: 10px; }
+        .spinning { animation: spin 2s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* Progress Bar */
+        .p-box { width: 85%; height: 6px; background: #2d3846; border-radius: 10px; margin: 15px auto; overflow: hidden; display: none; }
+        .p-bar { width: 0%; height: 100%; background: var(--neon); }
+
+        .start-btn { margin: 20px auto; width: 90%; padding: 18px; border-radius: 15px; border: none; background: var(--neon); color: black; font-size: 16px; font-weight: 900; text-transform: uppercase; }
+        .start-btn:disabled { background: #2d3846; color: #6e7681; }
+
+        .history-list { padding: 0 20px; display: flex; flex-direction: column; gap: 12px; }
+        .history-card { background: var(--card); border-radius: 12px; padding: 15px; text-align: left; border-left: 4px solid var(--neon); }
+    </style>
+</head>
+<body>
+
+    <div class="header"><a href="home.html" class="back-btn"><i class="fas fa-chevron-left"></i> BACK</a><h2 style="font-size: 18px; color: #34cc5c; margin: 0;">QUANTUM EXCHANGE</h2><div style="width: 40px;"></div></div>
+
+    <div class="tab-container">
+        <button class="tab-btn active" id="tabMin" onclick="switchTab('mining')">MINING</button>
+        <button class="tab-btn" id="tabHist" onclick="switchTab('history')">HISTORY</button>
+    </div>
+
+    <div id="miningTab" class="tab-content active">
+        <div class="card-container">
+            <div class="card-top">
+                <div class="lvl-badge" id="lvlTag">LEVEL -</div>
+                <div class="task-progress-tag" id="taskTag">0 / 0</div>
+                <div class="mining-icon" id="mIcon"><i class="fas fa-atom"></i></div>
+                <h3 id="mStatus" style="color:var(--neon); margin:0;">READY</h3>
+            </div>
+            <div class="p-box" id="pBox"><div class="p-bar" id="pBar"></div></div>
+            <div style="padding:20px; text-align:left; background:#1c2531; border-top: 1px solid rgba(255,255,255,0.05);">
+                <h4 id="cTitle" style="margin:0 0 8px 0; color:#e1e4e8; font-size: 16px;">Network Scanning...</h4>
+                <div id="cData" style="font-size:13px; color:#8b949e; font-family:monospace; line-height: 1.6;">
+                    Amount: <span id="dispAmt">--</span> <br>
+                    Currency: <span id="dispCur">--</span> <br>
+                    Timestamp: <span id="dispTime">--</span>
+                </div>
+            </div>
+        </div>
+        <button class="start-btn" id="startBtn" onclick="runExchange()">START EXCHANGE NOW</button>
+    </div>
+
+    <div id="historyTab" class="tab-content"><div class="history-list" id="histList"></div></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue, update, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = { 
+              authDomain: "sha1-105ac.firebaseapp.com",
+  databaseURL: "https://sha1-105ac-default-rtdb.firebaseio.com",
+  projectId: "sha1-105ac",
+  storageBucket: "sha1-105ac.firebasestorage.app",
+  messagingSenderId: "1056846099713",
+  appId: "1:1056846099713:web:c27970161f7a2493db1700",
+  measurementId: "G-T1EK6X2N48"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const userPhone = localStorage.getItem("userPhone") || "0717863077";
+
+        let user = {}; let vip = {}; let cards = [];
+
+        window.switchTab = (tab) => {
+            document.getElementById('miningTab').classList.toggle('active', tab==='mining');
+            document.getElementById('historyTab').classList.toggle('active', tab==='history');
+            document.getElementById('tabMin').classList.toggle('active', tab==='mining');
+            document.getElementById('tabHist').classList.toggle('active', tab==='history');
+        };
+
+        // පරිශීලක දත්ත සහ VIP ලිමිට්
+        onValue(ref(db, `users/${userPhone}`), async (snap) => {
+            if(snap.exists()){
+                user = snap.val();
+                const lvl = user.currentVIP || "level_1";
+                const vSnap = await get(ref(db, `vipSettings/${lvl}`));
+                if(vSnap.exists()){
+                    vip = vSnap.val();
+                    const limit = vip.dailyTasks || 5;
+                    document.getElementById('lvlTag').innerText = lvl.toUpperCase();
+                    document.getElementById('taskTag').innerText = `${user.tasksDone || 0} / ${limit}`;
+                    if((user.tasksDone || 0) >= limit) document.getElementById('startBtn').disabled = true;
+                }
+            }
+        });
+
+        // cardStore එකෙන් දත්ත රැන්ඩම්ව ගැනීමට සූදානම් කිරීම
+        onValue(ref(db, 'adminSettings/cardStore'), snap => { if(snap.exists()) cards = Object.values(snap.val()); });
+
+        // History
+        onValue(ref(db, `exchangeHistory/${userPhone}`), (snap) => {
+            const list = document.getElementById('histList'); list.innerHTML = "";
+            if(snap.exists()){
+                Object.values(snap.val()).reverse().forEach((item, idx, arr) => {
+                    list.innerHTML += `<div class="history-card"><div style="display:flex; justify-content:space-between; font-size:11px; color:var(--neon); margin-bottom:5px;"><span>EXCHANGE #${arr.length - idx}</span><span>+ LKR ${item.profit.toFixed(2)}</span></div><div style="font-size:11px; color:#8b949e;">Amount: ${item.amount} | Currency: ${item.currency}<br>Time: ${item.time}</div></div>`;
+                });
+            }
+        });
+
+        window.runExchange = async () => {
+            if(cards.length === 0) return alert("System busy, please try again.");
+            const btn = document.getElementById('startBtn');
+            const icon = document.getElementById('mIcon');
+            const pBox = document.getElementById('pBox');
+            const pBar = document.getElementById('pBar');
+            
+            // රැන්ඩම් දත්තයක් තෝරා ගැනීම
+            const rCard = cards[Math.floor(Math.random() * cards.length)];
+
+            btn.disabled = true; icon.classList.add('spinning'); pBox.style.display = 'block';
+            document.getElementById('cTitle').innerText = "Scanning Secure Node...";
+            
+            let w = 0;
+            const t = setInterval(async () => {
+                if(w >= 100){
+                    clearInterval(t);
+                    const profit = Number(vip.profitPerTask || 0);
+                    const time = new Date().toLocaleString();
+                    
+                    // කාඩ් එක ඇතුළේ දත්ත පෙන්වීම
+                    document.getElementById('cTitle').innerText = "Data Extracted Successfully";
+                    document.getElementById('dispAmt').innerText = rCard.amount;
+                    document.getElementById('dispCur').innerText = rCard.currency;
+                    document.getElementById('dispTime').innerText = rCard.timestamp;
+
+                    await push(ref(db, `exchangeHistory/${userPhone}`), { amount: rCard.amount, currency: rCard.currency, profit, time });
+                    await update(ref(db, `users/${userPhone}`), {
+                        tasksDone: (user.tasksDone || 0) + 1,
+                        balance: (user.balance || 0) + profit,
+                        todayProfit: (user.todayProfit || 0) + profit,
+                        totalInc: (user.totalInc || 0) + profit
+                    });
+
+                    icon.classList.remove('spinning'); pBox.style.display = 'none'; pBar.style.width = '0%';
+                    btn.disabled = false;
+                } else { w += 1; pBar.style.width = w + '%'; }
+            }, 100); // 10s Timer
+        };
+    </script>
+</body>
+</html>
+

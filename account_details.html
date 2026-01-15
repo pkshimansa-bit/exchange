@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account History</title>
+    <style>
+        :root { --blue: #00d2ff; --dark: #060c21; }
+        body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+        .header { display: flex; align-items: center; padding: 15px; background: rgba(0,0,0,0.8); border-bottom: 1px solid var(--blue); }
+        .back-btn { text-decoration: none; color: var(--blue); font-size: 24px; margin-right: 15px; cursor: pointer; }
+        .title { flex-grow: 1; text-align: center; font-weight: bold; color: var(--blue); margin-right: 35px; }
+        .tabs { display: flex; background: rgba(255,255,255,0.05); margin: 10px; border-radius: 10px; overflow: hidden; border: 1px solid #333; }
+        .tab-btn { flex: 1; padding: 12px; border: none; background: none; color: white; cursor: pointer; font-weight: bold; }
+        .tab-btn.active { background: var(--blue); color: #000; }
+        .list-container { padding: 10px; }
+        .history-card { background: rgba(255,255,255,0.03); border: 1px solid #222; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .amt { font-size: 16px; font-weight: bold; }
+        .date { font-size: 11px; opacity: 0.5; margin-top: 5px; }
+        .status { font-size: 13px; font-weight: bold; text-transform: capitalize; }
+        .pending { color: #f1c40f; }
+        .success { color: #2ecc71; }
+        .approved { color: #2ecc71; }
+        .rejected { color: #e74c3c; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="javascript:history.back()" class="back-btn">❮</a>
+        <div class="title">ACCOUNT HISTORY</div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" id="rechargeTab" onclick="switchTab('recharge')">Recharges</button>
+        <button class="tab-btn" id="withdrawTab" onclick="switchTab('withdrawal')">Withdrawals</button>
+    </div>
+
+    <div class="list-container" id="historyList"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = { 
+              authDomain: "sha1-105ac.firebaseapp.com",
+  databaseURL: "https://sha1-105ac-default-rtdb.firebaseio.com",
+  projectId: "sha1-105ac",
+  storageBucket: "sha1-105ac.firebasestorage.app",
+  messagingSenderId: "1056846099713",
+  appId: "1:1056846099713:web:c27970161f7a2493db1700",
+  measurementId: "G-T1EK6X2N48"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const phone = localStorage.getItem("userPhone");
+
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if(urlParams.get('tab') === 'withdrawal') switchTab('withdrawal');
+            else loadHistory('recharges');
+        };
+
+        window.switchTab = (type) => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            if(type === 'recharge') {
+                document.getElementById('rechargeTab').classList.add('active');
+                loadHistory('recharges');
+            } else {
+                document.getElementById('withdrawTab').classList.add('active');
+                loadHistory('withdrawRequests'); // බකට් නම වෙනස් කළා
+            }
+        };
+
+        async function loadHistory(path) {
+            const listDiv = document.getElementById('historyList');
+            listDiv.innerHTML = "<p style='text-align:center; opacity:0.5;'>Loading...</p>";
+
+            try {
+                const snap = await get(ref(db, path));
+                let html = "";
+                let found = false;
+
+                if(snap.exists()){
+                    const dataObj = snap.val();
+                    // Firebase එකේ තියෙන ඔක්කොම records ලූප් කරනවා
+                    Object.keys(dataObj).forEach(key => {
+                        const record = dataObj[key];
+                        // දැනට ලොග් වෙලා ඉන්න මෙම්බර්ගේ දත්ත විතරක් ගන්නවා
+                        if(record.phone === phone) {
+                            found = true;
+                            const status = record.status || "Pending";
+                            html = `
+                                <div class="history-card">
+                                    <div>
+                                        <div class="amt">LKR ${record.amount}</div>
+                                        <div class="date">${record.date || 'No Date'}</div>
+                                    </div>
+                                    <div class="status ${status.toLowerCase()}">${status}</div>
+                                </div>
+                            ` + html; // අලුත් ඒවා උඩට එන්න
+                        }
+                    });
+                }
+                listDiv.innerHTML = found ? html : "<p style='text-align:center; margin-top:50px; opacity:0.5;'>No records found.</p>";
+            } catch (e) {
+                listDiv.innerHTML = "<p style='text-align:center; color:red;'>Error connecting to database.</p>";
+            }
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recharge - Bet Win</title>
+    <style>
+        :root { --bg: #060c21; --card: #111d35; --blue: #00bcd4; --text: #ffffff; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+        
+        /* Header with Back Button */
+        .top-bar { 
+            display: flex; align-items: center; padding: 15px; 
+            background: var(--card); border-bottom: 1px solid rgba(0,188,212,0.2);
+        }
+        .back-btn { 
+            text-decoration: none; color: var(--blue); font-size: 24px; 
+            margin-right: 20px; font-weight: bold; cursor: pointer;
+        }
+        .top-bar h2 { margin: 0; font-size: 18px; flex: 1; text-align: center; margin-right: 40px; }
+
+        .content { padding: 20px; }
+        
+        /* Bank Details Box (Admin දෙන විස්තර පෙන්වන තැන) */
+        .bank-info-card {
+            background: linear-gradient(135deg, #0288d1, #060c21);
+            padding: 20px; border-radius: 12px; margin-bottom: 25px;
+            border: 1px solid rgba(0,188,212,0.3);
+        }
+        .bank-info-card h4 { margin: 0 0 10px; color: #ffeb3b; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
+        .bank-info-card p { margin: 5px 0; font-size: 14px; display: flex; justify-content: space-between; }
+        .bank-info-card span { font-weight: bold; color: white; }
+
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 13px; color: var(--blue); }
+        input { 
+            width: 100%; padding: 14px; border-radius: 8px; border: 1px solid #23395d; 
+            background: var(--card); color: white; box-sizing: border-box; outline: none;
+        }
+
+        .upload-box {
+            border: 2px dashed #23395d; padding: 20px; text-align: center;
+            border-radius: 10px; cursor: pointer; background: var(--card);
+        }
+        .upload-box img { max-width: 100%; max-height: 150px; display: none; margin-top: 10px; border-radius: 5px; }
+
+        .submit-btn { 
+            width: 100%; background: var(--blue); color: #060c21; border: none; 
+            padding: 16px; border-radius: 10px; font-weight: 800; font-size: 16px;
+            cursor: pointer; transition: 0.3s; margin-top: 10px;
+        }
+        .submit-btn:disabled { background: #555; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a href="wallet.html" class="back-btn">❮ Back</a>
+        <h2>Deposit Assets</h2>
+    </div>
+
+    <div class="content">
+        <div class="bank-info-card" id="adminBankBox">
+            <h4>🏦 Admin Bank Account</h4>
+            <p>Bank: <span id="bName">Loading...</span></p>
+            <p>Name: <span id="aName">Loading...</span></p>
+            <p>A/C No: <span id="aNum">Loading...</span></p>
+        </div>
+
+        <div class="input-group">
+            <label>Deposit Amount (LKR)</label>
+            <input type="number" id="rAmount" placeholder="Enter amount (Min 500)">
+        </div>
+
+        <div class="input-group">
+            <label>Upload Payment Slip (Screenshot)</label>
+            <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+                <span id="uploadText">Click to select receipt</span>
+                <input type="file" id="fileInput" hidden accept="image/*" onchange="previewImage(event)">
+                <img id="slipPreview" src="">
+            </div>
+        </div>
+
+        <button class="submit-btn" id="btnSubmit" onclick="submitRecharge()">SUBMIT RECHARGE</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = { 
+            authDomain: "sha1-105ac.firebaseapp.com",
+  databaseURL: "https://sha1-105ac-default-rtdb.firebaseio.com",
+  projectId: "sha1-105ac",
+  storageBucket: "sha1-105ac.firebasestorage.app",
+  messagingSenderId: "1056846099713",
+  appId: "1:1056846099713:web:c27970161f7a2493db1700",
+  measurementId: "G-T1EK6X2N48"
+         };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const phone = localStorage.getItem("userPhone");
+        let selectedImgBase64 = "";
+
+        // ඇඩ්මින් දාපු බැංකු විස්තර ලෝඩ් කිරීම
+        onValue(ref(db, 'adminSettings/bankDetails'), (snap) => {
+            if(snap.exists()){
+                const d = snap.val();
+                document.getElementById('bName').innerText = d.bankName;
+                document.getElementById('aName').innerText = d.accountName;
+                document.getElementById('aNum').innerText = d.accountNumber;
+            }
+        });
+
+        // ඉමේජ් එක ප්‍රිවීව් කිරීම
+        window.previewImage = function(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function() {
+                selectedImgBase64 = reader.result;
+                const img = document.getElementById('slipPreview');
+                img.src = reader.result;
+                img.style.display = 'block';
+                document.getElementById('uploadText').innerText = "Image Selected ✅";
+            }
+            reader.readAsDataURL(file);
+        };
+
+        // රීචාර්ජ් ඉල්ලීම සබ්මිට් කිරීම
+        window.submitRecharge = async function() {
+            const amt = document.getElementById('rAmount').value;
+            if(!amt || !selectedImgBase64) return alert("කරුණාකර මුදල සහ රිසිට් එක ඇතුළත් කරන්න!");
+
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.innerText = "Uploading...";
+
+            try {
+                const newRef = push(ref(db, 'recharges'));
+                await set(newRef, {
+                    phone: phone,
+                    amount: Number(amt),
+                    proofUrl: selectedImgBase64,
+                    status: "pending",
+                    timestamp: Date.now()
+                });
+                alert("රිසිට් එක සාර්ථකව යොමු කළා! ඇඩ්මින් පරීක්ෂා කිරීමෙන් පසු මුදල් ලැබෙනු ඇත.");
+                window.location.href = "wallet.html";
+            } catch (err) {
+                alert("Error: " + err.message);
+                btn.disabled = false;
+                btn.innerText = "SUBMIT RECHARGE";
+            }
+        };
+    </script>
+</body>
+</html>
+
