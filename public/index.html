@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication | Bet Win</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --neon: #00f2ff; --bg: #000428; }
+        body { 
+            margin: 0; font-family: 'Segoe UI', sans-serif; 
+            background: radial-gradient(circle at center, #004e92 0%, var(--bg) 100%);
+            background-attachment: fixed; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh;
+        }
+        .auth-card { width: 90%; max-width: 400px; background: rgba(0,0,0,0.5); padding: 35px; border-radius: 25px; border: 1px solid rgba(0,242,255,0.2); backdrop-filter: blur(15px); box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        
+        /* Toggle Switch */
+        .auth-toggle { display: flex; margin-bottom: 30px; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 5px; }
+        .toggle-btn { flex: 1; padding: 10px; border: none; background: none; color: white; cursor: pointer; border-radius: 10px; font-weight: bold; transition: 0.3s; }
+        .toggle-btn.active { background: var(--neon); color: black; }
+
+        .form-section { display: none; }
+        .form-section.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        h2 { text-align: center; color: var(--neon); letter-spacing: 2px; margin-top: 0; font-size: 20px; }
+        .input-group { margin-bottom: 18px; position: relative; }
+        .input-group i { position: absolute; left: 15px; top: 15px; color: var(--neon); }
+        input { width: 100%; padding: 14px 15px 14px 45px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; box-sizing: border-box; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--neon); box-shadow: 0 0 10px rgba(0, 242, 255, 0.2); }
+        
+        .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; background: var(--neon); color: black; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; transition: 0.3s; }
+        .btn:hover { box-shadow: 0 0 20px var(--neon); transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card">
+        <div class="auth-toggle">
+            <button id="tabLogin" class="toggle-btn active" onclick="showForm('login')">LOGIN</button>
+            <button id="tabRegister" class="toggle-btn" onclick="showForm('register')">SIGN UP</button>
+        </div>
+
+        <div id="loginForm" class="form-section active">
+            <h2>WELCOME BACK</h2>
+            <div class="input-group">
+                <i class="fas fa-phone"></i>
+                <input type="text" id="lPhone" placeholder="Phone Number">
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="lPass" placeholder="Password">
+            </div>
+            <button class="btn" onclick="login()">Sign In</button>
+        </div>
+
+        <div id="registerForm" class="form-section">
+            <h2>CREATE ACCOUNT</h2>
+            <div class="input-group">
+                <i class="fas fa-phone"></i>
+                <input type="text" id="rPhone" placeholder="Phone Number">
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="rPass" placeholder="Set Password">
+            </div>
+            <div class="input-group">
+                <i class="fas fa-check-circle"></i>
+                <input type="password" id="rConfirm" placeholder="Confirm Password">
+            </div>
+            <div class="input-group">
+                <i class="fas fa-user-plus"></i>
+                <input type="text" id="rRef" placeholder="Referral Code (Optional)">
+            </div>
+            <button class="btn" onclick="register()">Register Now</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+             authDomain: "sha1-105ac.firebaseapp.com",
+  databaseURL: "https://sha1-105ac-default-rtdb.firebaseio.com",
+  projectId: "sha1-105ac",
+  storageBucket: "sha1-105ac.firebasestorage.app",
+  messagingSenderId: "1056846099713",
+  appId: "1:1056846099713:web:c27970161f7a2493db1700",
+  measurementId: "G-T1EK6X2N48"
+         };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // 1. ටැඹ් මාරු කිරීමේ ලොජික් එක
+        window.showForm = (form) => {
+            document.querySelectorAll('.form-section, .toggle-btn').forEach(el => el.classList.remove('active'));
+            if(form === 'login') {
+                document.getElementById('loginForm').classList.add('active');
+                document.getElementById('tabLogin').classList.add('active');
+            } else {
+                document.getElementById('registerForm').classList.add('active');
+                document.getElementById('tabRegister').classList.add('active');
+            }
+        }
+
+        // 2. URL එකෙන් රෙෆරල් කෝඩ් එක කියවීම
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const refCode = urlParams.get('ref');
+            if(refCode) {
+                showForm('register');
+                document.getElementById('rRef').value = refCode;
+            }
+        };
+
+        // 3. ලියාපදිංචි වීම (Register)
+        window.register = async () => {
+            const phone = document.getElementById('rPhone').value;
+            const pass = document.getElementById('rPass').value;
+            const cPass = document.getElementById('rConfirm').value;
+            const refCode = document.getElementById('rRef').value || "admin";
+
+            if(!phone || !pass || pass !== cPass) return alert("Please fill all details correctly!");
+
+            const userRef = ref(db, `users/${phone}`);
+            const snap = await get(userRef);
+            if(snap.exists()) return alert("User already exists!");
+
+            const myRefCode = Math.floor(100000 + Math.random() * 900000).toString();
+            await set(userRef, {
+                phone, password: pass, balance: 0, currentVIP: "level_0",
+                invitedBy: refCode, myReferralCode: myRefCode,
+                lastDate: new Date().toLocaleDateString(), totalInc: 0
+            });
+
+            localStorage.setItem("userPhone", phone);
+            window.location.href = "home.html"; // සාර්ථක වූ විට හෝම් පේජ් එකට
+        };
+
+        // 4. ලොග් වීම (Login)
+        window.login = async () => {
+            const phone = document.getElementById('lPhone').value;
+            const pass = document.getElementById('lPass').value;
+
+            const snap = await get(ref(db, `users/${phone}`));
+            if(snap.exists() && snap.val().password === pass) {
+                localStorage.setItem("userPhone", phone);
+                window.location.href = "home.html"; // සාර්ථක වූ විට හෝම් පේජ් එකට
+            } else {
+                alert("Invalid phone number or password!");
+            }
+        };
+    </script>
+</body>
+</html>
+
