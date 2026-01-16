@@ -3,77 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum Exchange | Data Fix</title>
+    <title>Quantum Exchange - SHA1</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --neon: #34cc5c; --bg: #0b111a; --card: #1c2531; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; text-align: center; padding-bottom: 100px; }
-        .header { padding: 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(52, 204, 92, 0.2); }
-        .back-btn { color: var(--neon); text-decoration: none; font-size: 14px; }
-        .tab-container { display: flex; justify-content: center; margin: 15px 0; gap: 10px; }
-        .tab-btn { background: #242d3a; border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px 25px; border-radius: 25px; cursor: pointer; }
-        .tab-btn.active { background: var(--neon); color: black; font-weight: bold; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        /* Card Section */
-        .card-container { margin: 10px auto; width: 92%; max-width: 380px; background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
-        .card-top { background: #242d3a; padding: 40px 20px; position: relative; }
-        .task-progress-tag { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5); color: var(--neon); padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; border: 1px solid var(--neon); }
-        .lvl-badge { position: absolute; top: 15px; left: 15px; background: var(--neon); color: white; padding: 4px 12px; border-radius: 8px; font-size: 10px; }
-        .mining-icon { font-size: 55px; color: var(--neon); margin-bottom: 10px; }
-        .spinning { animation: spin 2s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        /* Progress Bar */
-        .p-box { width: 85%; height: 6px; background: #2d3846; border-radius: 10px; margin: 15px auto; overflow: hidden; display: none; }
-        .p-bar { width: 0%; height: 100%; background: var(--neon); }
-
-        .start-btn { margin: 20px auto; width: 90%; padding: 18px; border-radius: 15px; border: none; background: var(--neon); color: black; font-size: 16px; font-weight: 900; text-transform: uppercase; }
-        .start-btn:disabled { background: #2d3846; color: #6e7681; }
-
-        .history-list { padding: 0 20px; display: flex; flex-direction: column; gap: 12px; }
-        .history-card { background: var(--card); border-radius: 12px; padding: 15px; text-align: left; border-left: 4px solid var(--neon); }
+        body { margin: 0; padding: 0; font-family: sans-serif; background-color: #0d1b2a; color: white; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .header { width: 100%; padding: 20px; display: flex; align-items: center; box-sizing: border-box; }
+        .header i { font-size: 20px; color: #00ff88; cursor: pointer; margin-right: 15px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab { padding: 10px 30px; border-radius: 20px; background: #2c3e50; cursor: pointer; font-weight: bold; }
+        .tab.active { background: #00ff88; color: #0d1b2a; }
+        .exchange-card { width: 90%; max-width: 400px; background: #1b263b; border-radius: 20px; padding: 25px; text-align: center; border: 1px solid #415a77; position: relative; }
+        .vip-badge { background: #00ff88; color: #0d1b2a; padding: 5px 15px; border-radius: 10px; font-weight: bold; font-size: 12px; }
+        .task-count { float: right; color: #00ff88; font-weight: bold; }
+        .mining-icon { font-size: 60px; color: #00ff88; margin: 30px 0; }
+        .status-text { font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #00ff88; }
+        .info-box { background: rgba(255, 255, 255, 0.05); border-radius: 10px; padding: 15px; text-align: left; font-size: 14px; color: #aaa; margin-bottom: 30px; line-height: 1.6; }
+        .btn-start { width: 100%; padding: 15px; border-radius: 10px; border: none; background: #2c3e50; color: #7f8c8d; font-size: 16px; font-weight: bold; cursor: not-allowed; transition: 0.3s; }
+        .btn-active { background: #00ff88; color: #0d1b2a; cursor: pointer; }
+        .rotate { animation: spin 2s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <div class="header"><a href="home.html" class="back-btn"><i class="fas fa-chevron-left"></i> BACK</a><h2 style="font-size: 18px; color: #34cc5c; margin: 0;">QUANTUM EXCHANGE</h2><div style="width: 40px;"></div></div>
-
-    <div class="tab-container">
-        <button class="tab-btn active" id="tabMin" onclick="switchTab('mining')">MINING</button>
-        <button class="tab-btn" id="tabHist" onclick="switchTab('history')">HISTORY</button>
+    <div class="header">
+        <i class="fas fa-chevron-left" onclick="window.history.back()"></i>
+        <h2 style="font-size: 18px; margin: 0; color: #00ff88;">QUANTUM EXCHANGE</h2>
     </div>
 
-    <div id="miningTab" class="tab-content active">
-        <div class="card-container">
-            <div class="card-top">
-                <div class="lvl-badge" id="lvlTag">LEVEL -</div>
-                <div class="task-progress-tag" id="taskTag">0 / 0</div>
-                <div class="mining-icon" id="mIcon"><i class="fas fa-atom"></i></div>
-                <h3 id="mStatus" style="color:var(--neon); margin:0;">READY</h3>
-            </div>
-            <div class="p-box" id="pBox"><div class="p-bar" id="pBar"></div></div>
-            <div style="padding:20px; text-align:left; background:#1c2531; border-top: 1px solid rgba(255,255,255,0.05);">
-                <h4 id="cTitle" style="margin:0 0 8px 0; color:#e1e4e8; font-size: 16px;">Network Scanning...</h4>
-                <div id="cData" style="font-size:13px; color:#8b949e; font-family:monospace; line-height: 1.6;">
-                    Amount: <span id="dispAmt">--</span> <br>
-                    Currency: <span id="dispCur">--</span> <br>
-                    Timestamp: <span id="dispTime">--</span>
-                </div>
-            </div>
+    <div class="tabs">
+        <div class="tab active">MINING</div>
+        <div class="tab" onclick="location.href='history.html'">HISTORY</div>
+    </div>
+
+    <div class="exchange-card">
+        <div>
+            <span class="vip-badge" id="vipLevel">LOADING...</span>
+            <span class="task-count" id="taskDisplay">0 / 0</span>
         </div>
-        <button class="start-btn" id="startBtn" onclick="runExchange()">START EXCHANGE NOW</button>
+
+        <div class="mining-icon" id="miningIcon"><i class="fas fa-cog"></i></div>
+        <div class="status-text" id="statusLabel">READY</div>
+
+        <div class="info-box">
+            <b>Network Scanning...</b><br>
+            Amount: <span id="lastAmount">--</span><br>
+            Currency: <span id="lastCurrency">--</span><br>
+            Timestamp: <span id="lastTime">--</span>
+        </div>
+
+        <button id="exchangeBtn" class="btn-start" onclick="startExchange()">START EXCHANGE NOW</button>
     </div>
 
-    <div id="historyTab" class="tab-content"><div class="history-list" id="histList"></div></div>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, update, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-        const firebaseConfig = { 
-              authDomain: "sha1-105ac.firebaseapp.com",
+    <script>
+        // Firebase Config (ඔයාගේ එක මෙතනට පේස්ට් කරන්න)
+        const firebaseConfig = {
+          authDomain: "sha1-105ac.firebaseapp.com",
   databaseURL: "https://sha1-105ac-default-rtdb.firebaseio.com",
   projectId: "sha1-105ac",
   storageBucket: "sha1-105ac.firebasestorage.app",
@@ -81,88 +69,99 @@
   appId: "1:1056846099713:web:c27970161f7a2493db1700",
   measurementId: "G-T1EK6X2N48"
         };
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const userPhone = localStorage.getItem("userPhone") || "0717863077";
 
-        let user = {}; let vip = {}; let cards = [];
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const userPhone = localStorage.getItem('userPhone') || "0715307639"; //
 
-        window.switchTab = (tab) => {
-            document.getElementById('miningTab').classList.toggle('active', tab==='mining');
-            document.getElementById('historyTab').classList.toggle('active', tab==='history');
-            document.getElementById('tabMin').classList.toggle('active', tab==='mining');
-            document.getElementById('tabHist').classList.toggle('active', tab==='history');
-        };
+        let currentTasks = 0, maxTasks = 0, profitPerTask = 0, userBalance = 0;
 
-        // පරිශීලක දත්ත සහ VIP ලිමිට්
-        onValue(ref(db, `users/${userPhone}`), async (snap) => {
-            if(snap.exists()){
-                user = snap.val();
-                const lvl = user.currentVIP || "level_1";
-                const vSnap = await get(ref(db, `vipSettings/${lvl}`));
-                if(vSnap.exists()){
-                    vip = vSnap.val();
-                    const limit = vip.dailyTasks || 5;
-                    document.getElementById('lvlTag').innerText = lvl.toUpperCase();
-                    document.getElementById('taskTag').innerText = `${user.tasksDone || 0} / ${limit}`;
-                    if((user.tasksDone || 0) >= limit) document.getElementById('startBtn').disabled = true;
-                }
-            }
-        });
+        function loadData() {
+            const userRef = db.ref('users/' + userPhone);
+            userRef.on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    const today = new Date().toLocaleDateString('en-US'); //
 
-        // cardStore එකෙන් දත්ත රැන්ඩම්ව ගැනීමට සූදානම් කිරීම
-        onValue(ref(db, 'adminSettings/cardStore'), snap => { if(snap.exists()) cards = Object.values(snap.val()); });
+                    // 1. රෑ 12:00 Reset Logic
+                    if (data.LastDate !== today) {
+                        userRef.update({ tasksDone: 0, todayProfit: 0, LastDate: today });
+                        return;
+                    }
 
-        // History
-        onValue(ref(db, `exchangeHistory/${userPhone}`), (snap) => {
-            const list = document.getElementById('histList'); list.innerHTML = "";
-            if(snap.exists()){
-                Object.values(snap.val()).reverse().forEach((item, idx, arr) => {
-                    list.innerHTML += `<div class="history-card"><div style="display:flex; justify-content:space-between; font-size:11px; color:var(--neon); margin-bottom:5px;"><span>EXCHANGE #${arr.length - idx}</span><span>+ LKR ${item.profit.toFixed(2)}</span></div><div style="font-size:11px; color:#8b949e;">Amount: ${item.amount} | Currency: ${item.currency}<br>Time: ${item.time}</div></div>`;
-                });
-            }
-        });
+                    // 2. VIP මට්ටම අනුව සැකසුම්
+                    const vip = data.currentVIP || "intern";
+                    userBalance = data.balance || 0;
+                    currentTasks = data.tasksDone || 0;
 
-        window.runExchange = async () => {
-            if(cards.length === 0) return alert("System busy, please try again.");
-            const btn = document.getElementById('startBtn');
-            const icon = document.getElementById('mIcon');
-            const pBox = document.getElementById('pBox');
-            const pBar = document.getElementById('pBar');
-            
-            // රැන්ඩම් දත්තයක් තෝරා ගැනීම
-            const rCard = cards[Math.floor(Math.random() * cards.length)];
+                    if (vip === "intern") { maxTasks = 5; profitPerTask = 20; }
+                    else if (vip === "level_1") { maxTasks = 5; profitPerTask = 45; }
+                    else if (vip === "level_2") { maxTasks = 10; profitPerTask = 60; }
+                    else if (vip === "level_3") { maxTasks = 15; profitPerTask = 118; }
 
-            btn.disabled = true; icon.classList.add('spinning'); pBox.style.display = 'block';
-            document.getElementById('cTitle').innerText = "Scanning Secure Node...";
-            
-            let w = 0;
-            const t = setInterval(async () => {
-                if(w >= 100){
-                    clearInterval(t);
-                    const profit = Number(vip.profitPerTask || 0);
-                    const time = new Date().toLocaleString();
+                    document.getElementById("vipLevel").innerText = vip.toUpperCase();
+                    document.getElementById("taskDisplay").innerText = `${currentTasks} / ${maxTasks}`;
                     
-                    // කාඩ් එක ඇතුළේ දත්ත පෙන්වීම
-                    document.getElementById('cTitle').innerText = "Data Extracted Successfully";
-                    document.getElementById('dispAmt').innerText = rCard.amount;
-                    document.getElementById('dispCur').innerText = rCard.currency;
-                    document.getElementById('dispTime').innerText = rCard.timestamp;
+                    const btn = document.getElementById("exchangeBtn");
+                    if (currentTasks < maxTasks) {
+                        btn.classList.add("btn-active");
+                        btn.disabled = false;
+                        btn.innerText = "START EXCHANGE NOW";
+                    } else {
+                        btn.classList.remove("btn-active");
+                        btn.disabled = true;
+                        btn.innerText = "TASKS COMPLETED";
+                    }
+                }
+            });
+        }
 
-                    await push(ref(db, `exchangeHistory/${userPhone}`), { amount: rCard.amount, currency: rCard.currency, profit, time });
-                    await update(ref(db, `users/${userPhone}`), {
-                        tasksDone: (user.tasksDone || 0) + 1,
-                        balance: (user.balance || 0) + profit,
-                        todayProfit: (user.todayProfit || 0) + profit,
-                        totalInc: (user.totalInc || 0) + profit
-                    });
+        function startExchange() {
+            const btn = document.getElementById("exchangeBtn");
+            const icon = document.getElementById("miningIcon");
+            btn.disabled = true;
+            btn.classList.remove("btn-active");
+            icon.classList.add("rotate");
+            document.getElementById("statusLabel").innerText = "SCANNING...";
 
-                    icon.classList.remove('spinning'); pBox.style.display = 'none'; pBar.style.width = '0%';
-                    btn.disabled = false;
-                } else { w += 1; pBar.style.width = w + '%'; }
-            }, 100); // 10s Timer
-        };
+            // තත්පර 3ක Animation එකක්
+            setTimeout(() => {
+                const profit = profitPerTask;
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString();
+
+                // History දත්ත සකස් කිරීම
+                const historyEntry = {
+                    amount: (profit * 10),
+                    profit: profit,
+                    time: timeStr,
+                    date: now.toLocaleDateString(),
+                    type: "Mining"
+                };
+
+                // Database Update කිරීම
+                const userRef = db.ref('users/' + userPhone);
+                userRef.update({
+                    balance: userBalance + profit,
+                    tasksDone: currentTasks + 1,
+                    todayProfit: (currentTasks + 1) * profit
+                });
+
+                userRef.child('history').push(historyEntry).then(() => {
+                    document.getElementById("lastAmount").innerText = (profit * 10).toFixed(2);
+                    document.getElementById("lastCurrency").innerText = "LKR";
+                    document.getElementById("lastTime").innerText = timeStr;
+                    document.getElementById("statusLabel").innerText = "SUCCESS!";
+                    icon.classList.remove("rotate");
+                    
+                    setTimeout(() => { document.getElementById("statusLabel").innerText = "READY"; }, 2000);
+                });
+            }, 3000);
+        }
+
+        window.onload = loadData;
     </script>
 </body>
 </html>
+
 
