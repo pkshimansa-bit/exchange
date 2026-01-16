@@ -1,1 +1,110 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exchange History - SHA1</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background-color: #0d1b2a; color: white; min-height: 100vh; }
+        .header { width: 100%; padding: 20px; display: flex; align-items: center; background: #1b263b; position: sticky; top: 0; z-index: 100; box-sizing: border-box; }
+        .header i { font-size: 20px; color: #00ff88; cursor: pointer; margin-right: 15px; }
+        .container { padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .history-list { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 15px; }
+        .history-item { background: #1b263b; border: 1px solid #415a77; border-radius: 15px; padding: 15px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
+        .history-item:hover { border-color: #00ff88; }
+        .info-left { display: flex; flex-direction: column; gap: 5px; }
+        .type-label { font-size: 14px; font-weight: bold; color: #00ff88; text-transform: uppercase; }
+        .time-label { font-size: 12px; color: #aaa; }
+        .info-right { text-align: right; }
+        .profit-label { font-size: 16px; font-weight: bold; color: #00ff88; }
+        .amount-label { font-size: 12px; color: #7f8c8d; }
+        #noData { text-align: center; margin-top: 50px; color: #aaa; display: none; }
+        .loading-spinner { border: 4px solid rgba(255, 255, 255, 0.1); border-left-color: #00ff88; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin-top: 50px; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <i class="fas fa-chevron-left" onclick="window.history.back()"></i>
+        <h2 style="font-size: 18px; margin: 0;">EXCHANGE HISTORY</h2>
+    </div>
+
+    <div class="container">
+        <div id="loader" class="loading-spinner"></div>
+        <div id="noData">No transactions found.</div>
+        <div class="history-list" id="historyContainer">
+            </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <script>
+        // Firebase Config (කලින් පාවිච්චි කරපු එකම පේස්ට් කරන්න)
+        const firebaseConfig = {
+             authDomain: "sha1-105ac.firebaseapp.com",
+  databaseURL: "https://sha1-105ac-default-rtdb.firebaseio.com",
+  projectId: "sha1-105ac",
+  storageBucket: "sha1-105ac.firebasestorage.app",
+  messagingSenderId: "1056846099713",
+  appId: "1:1056846099713:web:c27970161f7a2493db1700",
+  measurementId: "G-T1EK6X2N48"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const userPhone = localStorage.getItem('userPhone') || "0715307639"; 
+
+        function loadHistory() {
+            const historyRef = db.ref('users/' + userPhone + '/history');
+            
+            // දත්ත කියවීම (අලුත්ම දත්ත මුලට එන විදිහට)
+            historyRef.on('value', (snapshot) => {
+                const container = document.getElementById("historyContainer");
+                const loader = document.getElementById("loader");
+                const noData = document.getElementById("noData");
+                
+                container.innerHTML = "";
+                loader.style.display = "none";
+
+                if (snapshot.exists()) {
+                    noData.style.display = "none";
+                    let records = [];
+
+                    snapshot.forEach((childSnapshot) => {
+                        records.push(childSnapshot.val());
+                    });
+
+                    // ලිස්ට් එක අනිත් පැත්ත හරවනවා (Reverse) අලුත් ඒවා උඩට ගන්න
+                    records.reverse().forEach((data) => {
+                        const itemHtml = `
+                            <div class="history-item">
+                                <div class="info-left">
+                                    <span class="type-label">${data.type || 'EXCHANGE'}</span>
+                                    <span class="time-label">${data.date} | ${data.time}</span>
+                                </div>
+                                <div class="info-right">
+                                    <div class="profit-label">+ LKR ${parseFloat(data.profit).toFixed(2)}</div>
+                                    <div class="amount-label">Vol: LKR ${parseFloat(data.amount).toFixed(2)}</div>
+                                </div>
+                            </div>
+                        `;
+                        container.innerHTML += itemHtml;
+                    });
+                } else {
+                    noData.style.display = "block";
+                }
+            }, (error) => {
+                console.error(error);
+                alert("දත්ත කියවීමේ දෝෂයක්!");
+            });
+        }
+
+        window.onload = loadHistory;
+    </script>
+</body>
+</html>
+
 
